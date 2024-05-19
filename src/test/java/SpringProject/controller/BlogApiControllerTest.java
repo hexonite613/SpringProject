@@ -2,6 +2,7 @@ package SpringProject.controller;
 
 import SpringProject.domain.Article;
 import SpringProject.dto.AddArticleRequest;
+import SpringProject.dto.UpdateArticleRequest;
 import SpringProject.repository.BlogRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -118,4 +119,51 @@ public class BlogApiControllerTest {
                 .andExpect(jsonPath("$.title").value(title));
     }
 
+    @DisplayName("글 삭제 테스트")
+    @Test
+    public void deleteArticle() throws Exception{
+        final String url="/api/articles/{id}";
+        final String title="title";
+        final String content="content";
+
+        Article savedArticle=blogRepository.save(Article.builder()
+                .title(title)
+                .content(content)
+                .build());
+        final ResultActions resultActions=mockMvc.perform(delete(url, savedArticle.getId())).andExpect(status().isOk());
+
+        List<Article> articles=blogRepository.findAll();
+
+        assertThat(articles).isEmpty();
+    }
+
+    @DisplayName("글 수정 테스트")
+    @Test
+    public void updateArticle() throws Exception{
+        final String url="/api/articles/{id}";
+        final String title="title";
+        final String content="content";
+
+        Article savedArticle=blogRepository.save(Article.builder()
+                .title(title)
+                .content(content)
+                .build());
+
+        final String newTitle="new title";
+        final String newContent="new content";
+
+        UpdateArticleRequest request=new UpdateArticleRequest(newTitle,newContent);
+
+        ResultActions result=mockMvc.perform(put(url, savedArticle.getId())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(request)));
+
+        result.andExpect(status().isOk());
+
+        Article article=blogRepository.findById(savedArticle.getId()).get();
+
+        assertThat(article.getTitle()).isEqualTo(newTitle);
+        assertThat(article.getContent()).isEqualTo(newContent);
+
+    }
 }
