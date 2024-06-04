@@ -11,3 +11,6 @@ spring:
   h2:
     console:
       enabled: true
+jwt:
+  issuer: sungtv2613@naver.com
+  secret_key: springboot
